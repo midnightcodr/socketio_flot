@@ -1,0 +1,25 @@
+extends layout
+block extra_js
+	script(src='/javascripts/jquery.flot.js')
+	script(type="text/javascript")
+		var socket=io.connect(), all_d=[];
+		var limit=10;
+		socket.on('newdata', function(v) {
+			all_d.push(v);
+			re_flot();	
+		});
+
+		function re_flot() {
+			// limit all_d to limit data points
+			if(all_d.length>limit) {
+				all_d=all_d.slice(1);
+			}
+			$.plot($('#testflot'), [ all_d ], {xaxis:{mode:'time', timeFormat:'%h:%M:%S'}});
+		}
+
+block content
+	h1= title
+	p Monitoring #{what}
+
+	div#testflot
+		loading data
