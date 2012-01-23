@@ -7,3 +7,6 @@
 
 ## screenshot
 http://dl.dropbox.com/u/16020214/screenshot_flot.png
+
+## socket.io + flot in action
+http://dl.dropbox.com/u/16020214/socketio_flot_in_action.mov
