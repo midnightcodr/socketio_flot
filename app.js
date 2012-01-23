@@ -40,12 +40,21 @@ app.get('/flot', routes.flot);
 var io=require('socket.io').listen(app);
 app.listen(3000);
 var interval=config.interval;
-var _ts_tmp=null, _t;
+var ts_tmp=null;
 (function schedule() {
 	setTimeout( function () {
-		_ts_tmp=[gt(),100*Math.random()];
-		io.sockets.emit('newdata', _ts_tmp);
+		ts_tmp=[gt(),100*Math.random()];
+		io.sockets.emit('newdata', ts_tmp);
 		schedule();
 	}, interval);
 })();
+io.sockets.on('connection', function(socket) {
+	socket.on( 'reqint', function(d) {
+		if(!isNaN(d)) {
+			interval=d;
+			console.log('setting update interval to %d.', d);
+		}
+		socket.broadcast.emit('setint', d);
+	});
+});
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

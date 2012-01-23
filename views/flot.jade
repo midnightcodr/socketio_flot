@@ -1,13 +1,23 @@
 extends layout
+block extra_css
+	link(href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css', rel='stylesheet')
 block extra_js
+	script(src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js')
 	script(src='/javascripts/jquery.flot.js')
 	script(type="text/javascript")
 		var socket=io.connect(), all_d=[];
-		var limit=10;
+		var limit=50;
 		socket.on('newdata', function(v) {
 			all_d.push(v);
 			re_flot();	
 		});
+
+		socket.on('setint', function(v) {
+			if(!isNaN(v)) {
+				$('#update_int_lbl').text(v);
+				$('#update_int').slider('option', 'value', v);
+			}
+		});	
 
 		function re_flot() {
 			// limit all_d to limit data points
@@ -17,9 +27,31 @@ block extra_js
 			$.plot($('#testflot'), [ all_d ], {xaxis:{mode:'time', timeFormat:'%h:%M:%S'}});
 		}
 
+		$(function() {
+			$('#update_int').slider( {
+				min:50,
+				max:2050,
+				step:50,
+				value:1050,
+				slide: function(event, ui) {
+					$('#update_int_lbl').text(ui.value);
+				},
+				change: function(event, ui) {
+					if(event.originalEvent) {
+						socket.emit('reqint', ui.value);
+					}
+				}
+			} );
+		});
+
 block content
 	h1= title
 	p Monitoring #{what}
+
+	p Update Interval 
+		span#update_int_lbl (default 1000ms)
+
+	div#update_int
 
 	div#testflot
 		loading data
