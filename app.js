@@ -49,6 +49,7 @@ var ts_tmp=null;
 	}, interval);
 })();
 io.sockets.on('connection', function(socket) {
+	socket.emit('setint', interval);
 	socket.on( 'reqint', function(d) {
 		if(!isNaN(d)) {
 			interval=d;
