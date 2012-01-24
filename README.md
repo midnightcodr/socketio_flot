@@ -5,7 +5,7 @@
 
 ## tested with node.js v0.6.7
 
-## screenshot
+## screenshot (with two clients running, same for the video link)
 http://dl.dropbox.com/u/16020214/screenshot_flot.png
 
 ## socket.io + flot in action
