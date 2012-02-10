@@ -37,11 +37,6 @@ block extra_js
 				slide: function(event, ui) {
 					$('#update_int_lbl').text(ui.value);
 					socket.emit('reqint', ui.value);
-				},
-				change: function(event, ui) {
-					if(event.originalEvent) {
-						socket.emit('reqint', ui.value);
-					}
 				}
 			} );
 		});
