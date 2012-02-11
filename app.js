@@ -39,14 +39,33 @@ app.get('/flot', routes.flot);
 
 var io=require('socket.io').listen(app);
 app.listen(3000);
-var interval=config.interval;
-var ts_tmp=null;
+var spawn=require('child_process').spawn, interval=config.interval, load=[];
+function parse_uptime(data) {
+	// input example: 9:49  up 21 mins, 3 users, load averages: 0.12 0.26 0.23
+	var m=/.*load averages: (.*) (.*) (.*)/.exec(data);
+	if(m) {
+		var f=[], ts=(new Date()).getTime();
+		for(var i=1,l=m.length;i<l;i++) {
+			f.push( [ts, parseFloat(m[i])] );
+		}
+		return f;
+	} else {
+		return null;
+	}
+}
 (function schedule() {
 	setTimeout( function () {
-		ts_tmp=[gt(),100*Math.random()];
-		io.sockets.emit('newdata', ts_tmp);
+		var uptime=spawn('uptime', null);
+		uptime.stdout.setEncoding('utf8');
+		uptime.stdout.on('data', function(data) {
+			console.log('getting :'+data);
+			load=parse_uptime(data);
+		});
+		if(load) {
+			io.sockets.emit('newdata', load);
+		}
 		schedule();
-	}, interval);
+	}, interval*1000);
 })();
 io.sockets.on('connection', function(socket) {
 	socket.emit('setint', interval);

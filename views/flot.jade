@@ -7,10 +7,12 @@ block extra_js
 	script(src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js')
 	script(src='/javascripts/jquery.flot.js')
 	script(type="text/javascript")
-		var socket=io.connect(), all_d=[];
-		var limit=50;
+		var socket=io.connect(), d1=[], d5=[], d15=[];;
+		var limit=1440; // show 2 hours data (7200/5)
 		socket.on('newdata', function(v) {
-			all_d.push(v);
+			d1.push(v[0]);			
+			d5.push(v[1]);			
+			d15.push(v[2]);			
 			re_flot();	
 		});
 
@@ -22,18 +24,32 @@ block extra_js
 		});	
 
 		function re_flot() {
-			// limit all_d to limit data points
-			if(all_d.length>limit) {
-				all_d=all_d.slice(1);
+			// slice arrays if len>limit
+			if(d1.length>limit) {
+				d1=d1.slice(1);
+				d5=d5.slice(1);
+				d15=d1.slice(1);
 			}
-			$.plot($('#testflot'), [ all_d ], {xaxis:{mode:'time', timeFormat:'%h:%M:%S'}});
+			var d=[
+				{ data: d1, label:'last 1 min load'},
+				{ data: d5, label:'last 5 min load'},
+				{ data: d15, label:'last 15 mins load'}
+			];
+			$.plot(
+				$('#testflot'), 
+				d,
+				{
+					xaxis:{mode:'time', timeFormat:'%h:%M:%S'},
+					legend: { container: $('#legend') }
+				}
+			);
 		}
 
 		$(function() {
 			$('#update_int').slider( {
-				min:50,
-				max:2050,
-				step:50,
+				min:1,
+				max:30,
+				step:1,
 				slide: function(event, ui) {
 					$('#update_int_lbl').text(ui.value);
 					socket.emit('reqint', ui.value);
@@ -50,5 +66,6 @@ block content
 
 	div#update_int
 
+	div#legend
 	div#testflot
-		loading data
+		|loading data

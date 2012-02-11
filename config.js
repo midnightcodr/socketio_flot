@@ -1,5 +1,5 @@
 var config={
-	interval:1000
+	interval:5
 };
 
 module.exports=config;
