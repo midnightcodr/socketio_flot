@@ -27,6 +27,7 @@ block extra_js
 			interval=v.interval;
 			limit=v.limit;
 			$('#update_int_lbl').text(interval);
+			$('#update_int').slider('option', 'value', interval);
 		});	
 		socket.on('setint', function(v) {
 			if(!isNaN(v)) {
