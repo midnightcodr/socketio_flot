@@ -1,15 +1,5 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
-
-a {
-  color: #00B7FF;
-}
-#testflot {
-width:720px;height:300px;
-}
-#update_int {
-width:200px;
-margin-bottom:10px;
-}
+body { padding: 50px; font: 14px "Lucida Grande", Helvetica, Arial, sans-serif; }
+a { color: #00B7FF; }
+#testflot { width:720px;height:300px; }
+#update_int { width:200px; margin-bottom:10px; }
+.last_val { font-weight:bold; }
