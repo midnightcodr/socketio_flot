@@ -4,6 +4,9 @@
  */
 
 var express = require('express')
+  , store = require('redis').createClient()
+  , pub = require('redis').createClient()
+  , sub = require('redis').createClient()
   , routes = require('./routes')
   , config = require('./config')
 
@@ -39,16 +42,23 @@ app.get('/flot', routes.flot);
 
 var io=require('socket.io').listen(app);
 app.listen(3000);
-var spawn=require('child_process').spawn, limit=config.limit, interval=config.interval, load=[], all_d={d1:[], d5:[], d15:[]}; // use all_d to hold config.limit number of data sets for initial connections
+var spawn= require('child_process').spawn
+	, limit=config.limit
+	, LIMIT=config.LIMIT
+	, interval=config.interval;
+function zpadding(s, len) {
+	// add more zeros if len>2
+	return ('00'+s).slice(0-len);
+}
 function parse_uptime(data) {
 	// input example: 9:49  up 21 mins, 3 users, load averages: 0.12 0.26 0.23
 	var m=/.*load averages: (.*) (.*) (.*)/.exec(data);
 	if(m) {
-		var f=[], ts=(new Date()).getTime();
+		var f=[], now=new Date(), ts=now.getTime();
 		for(var i=1,l=m.length;i<l;i++) {
 			f.push( [ts, parseFloat(m[i])] );
 		}
-		return f;
+		return {key:ts, d:f};
 	} else {
 		return null;
 	}
@@ -59,27 +69,43 @@ function parse_uptime(data) {
 		uptime.stdout.setEncoding('utf8');
 		uptime.stdout.on('data', function(data) {
 			//console.log('getting :'+data);
-			load=parse_uptime(data);
-			all_d.d1.push(load[0]);
-			all_d.d5.push(load[1]);
-			all_d.d15.push(load[2]);
-			if(all_d.d1.length>limit) {
-				all_d.d1.slice(1);
-				all_d.d5.slice(1);
-				all_d.d15.slice(1);
+			load_obj=parse_uptime(data);
+			if(load_obj) {
+				var key=load_obj.key, load=load_obj.d, str_load=JSON.stringify(load);
+				store.rpush('sysloads', str_load, function(e, r) {
+					pub.publish('sysloads', str_load);
+				});
+				// only store LIMIT number of entries, set in config.js
+				store.ltrim('sysloads', 0-LIMIT, LIMIT, function(e, r) {
+					//
+				});
 			}
 		});
-		if(load) {
-			io.sockets.emit('newdata', load);
-		}
 		schedule();
 	}, interval*1000);
 })();
+sub.subscribe('sysloads');
 io.sockets.on('connection', function(socket) {
 	socket.emit('init', {interval:interval, limit:limit});
-	if(all_d.d1.length>0) {
-		socket.emit('history', all_d);
-	}
+	sub.on('message', function(p, k) {
+		store.lrange('sysloads', -1, -1, function(e, data) {
+			socket.emit('newdata', JSON.parse(data[0])); 
+		});
+	});
+
+	store.lrange('sysloads', 0-limit, limit, function(e, data) {
+		// get data from redis
+		var d1=[], d5=[], d15=[];;
+		for(i=0, l=data.length; i<l; i++) {
+			d1.push( JSON.parse(data[i])[0] );
+			d5.push( JSON.parse(data[i])[1] );
+			d15.push( JSON.parse(data[i])[2] );
+		}
+		if(d1.length>0) {
+			console.log('sending history data');
+			socket.emit('history', {d1:d1, d5:d5, d15:d15});
+		}
+	});
 	socket.on( 'reqint', function(d) {
 		if(!isNaN(d)) {
 			interval=d;
