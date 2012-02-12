@@ -15,6 +15,13 @@ block extra_js
 			d15.push(v[2]);			
 			re_flot();	
 		});
+		socket.on('history', function(v) {
+			console.log(v);
+			d1=v.d1;
+			d5=v.d5;
+			d15=v.d15;
+			re_flot();
+		});
 
 		socket.on('init', function(v) {
 			interval=v.interval;

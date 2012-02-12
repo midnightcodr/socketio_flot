@@ -39,7 +39,7 @@ app.get('/flot', routes.flot);
 
 var io=require('socket.io').listen(app);
 app.listen(3000);
-var spawn=require('child_process').spawn, interval=config.interval, load=[];
+var spawn=require('child_process').spawn, limit=config.limit, interval=config.interval, load=[], all_d={d1:[], d5:[], d15:[]}; // use all_d to hold config.limit number of data sets for initial connections
 function parse_uptime(data) {
 	// input example: 9:49  up 21 mins, 3 users, load averages: 0.12 0.26 0.23
 	var m=/.*load averages: (.*) (.*) (.*)/.exec(data);
@@ -58,8 +58,16 @@ function parse_uptime(data) {
 		var uptime=spawn('uptime', null);
 		uptime.stdout.setEncoding('utf8');
 		uptime.stdout.on('data', function(data) {
-			console.log('getting :'+data);
+			//console.log('getting :'+data);
 			load=parse_uptime(data);
+			all_d.d1.push(load[0]);
+			all_d.d5.push(load[1]);
+			all_d.d15.push(load[2]);
+			if(all_d.d1.length>limit) {
+				all_d.d1.slice(1);
+				all_d.d5.slice(1);
+				all_d.d15.slice(1);
+			}
 		});
 		if(load) {
 			io.sockets.emit('newdata', load);
@@ -68,7 +76,10 @@ function parse_uptime(data) {
 	}, interval*1000);
 })();
 io.sockets.on('connection', function(socket) {
-	socket.emit('init', {interval:interval, limit:config.limit});
+	socket.emit('init', {interval:interval, limit:limit});
+	if(all_d.d1.length>0) {
+		socket.emit('history', all_d);
+	}
 	socket.on( 'reqint', function(d) {
 		if(!isNaN(d)) {
 			interval=d;
