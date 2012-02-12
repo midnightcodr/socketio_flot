@@ -4,7 +4,7 @@
 	http://<ip>:3000/flot
 
 ## [ new ]screenshot (showing system load average real-time)
-http://dl.dropbox.com/u/16020214/socketio_flot_system_load_demo.png
+http://dl.dropbox.com/u/16020214/socketio_flot_system_load_monitor_demo.png
 
 ## screenshot (with two clients running, same for the video link, good till commit 250a90d9f0)
 http://dl.dropbox.com/u/16020214/screenshot_flot.png
