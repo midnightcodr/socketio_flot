@@ -76,7 +76,7 @@ function parse_uptime(data) {
 					pub.publish('sysloads', str_load);
 				});
 				// only store LIMIT number of entries, set in config.js
-				store.ltrim('sysloads', 0-LIMIT, LIMIT, function(e, r) {
+				store.ltrim('sysloads', 0-LIMIT, -1, function(e, r) {
 					//
 				});
 			}
