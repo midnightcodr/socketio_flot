@@ -68,7 +68,7 @@ function parse_uptime(data) {
 	}, interval*1000);
 })();
 io.sockets.on('connection', function(socket) {
-	socket.emit('setint', interval);
+	socket.emit('init', {interval:interval, limit:config.limit});
 	socket.on( 'reqint', function(d) {
 		if(!isNaN(d)) {
 			interval=d;

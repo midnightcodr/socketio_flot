@@ -8,7 +8,7 @@ block extra_js
 	script(src='/javascripts/jquery.flot.js')
 	script(type="text/javascript")
 		var socket=io.connect(), d1=[], d5=[], d15=[];;
-		var limit=1440; // show 2 hours data (7200/5)
+		var interval,limit=1440; // show 2 hours data (7200/5)
 		socket.on('newdata', function(v) {
 			d1.push(v[0]);			
 			d5.push(v[1]);			
@@ -16,6 +16,11 @@ block extra_js
 			re_flot();	
 		});
 
+		socket.on('init', function(v) {
+			interval=v.interval;
+			limit=v.limit;
+			$('#update_int_lbl').text(interval);
+		});	
 		socket.on('setint', function(v) {
 			if(!isNaN(v)) {
 				$('#update_int_lbl').text(v);
@@ -50,6 +55,7 @@ block extra_js
 				min:1,
 				max:30,
 				step:1,
+				value:interval,
 				slide: function(event, ui) {
 					$('#update_int_lbl').text(ui.value);
 					socket.emit('reqint', ui.value);
@@ -62,7 +68,7 @@ block content
 	p Monitoring #{what}
 
 	p Update Interval 
-		span#update_int_lbl (default 1000ms)
+		span#update_int_lbl
 
 	div#update_int
 
