@@ -60,18 +60,18 @@ function parse_uptime(data) {
 		uptime.stdout.on('data', function(data) {
 			//console.log('getting :'+data);
 			load=parse_uptime(data);
-			all_d.d1.push(load[0]);
-			all_d.d5.push(load[1]);
-			all_d.d15.push(load[2]);
-			if(all_d.d1.length>limit) {
-				all_d.d1.slice(1);
-				all_d.d5.slice(1);
-				all_d.d15.slice(1);
+			if(load) {
+				all_d.d1.push(load[0]);
+				all_d.d5.push(load[1]);
+				all_d.d15.push(load[2]);
+				if(all_d.d1.length>limit) {
+					all_d.d1.slice(1);
+					all_d.d5.slice(1);
+					all_d.d15.slice(1);
+				}
+				io.sockets.emit('newdata', load);
 			}
 		});
-		if(load) {
-			io.sockets.emit('newdata', load);
-		}
 		schedule();
 	}, interval*1000);
 })();
