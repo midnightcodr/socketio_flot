@@ -4,6 +4,7 @@
  */
 
 var express = require('express')
+  , os = require('os')
   , store = require('redis').createClient()
   , pub = require('redis').createClient()
   , sub = require('redis').createClient()
@@ -42,44 +43,23 @@ app.get('/flot', routes.flot);
 
 var io=require('socket.io').listen(app);
 app.listen(3000);
-var spawn= require('child_process').spawn
-	, limit=config.limit
+var limit=config.limit
 	, LIMIT=config.LIMIT
 	, interval=config.interval;
-function zpadding(s, len) {
-	// add more zeros if len>2
-	return ('00'+s).slice(0-len);
-}
-function parse_uptime(data) {
-	// input example: 9:49  up 21 mins, 3 users, load averages: 0.12 0.26 0.23
-	var m=/.*load averages: (.*) (.*) (.*)/.exec(data);
-	if(m) {
-		var f=[], now=new Date(), ts=now.getTime();
-		for(var i=1,l=m.length;i<l;i++) {
-			f.push( [ts, parseFloat(m[i])] );
-		}
-		return {key:ts, d:f};
-	} else {
-		return null;
-	}
-}
 (function schedule() {
 	setTimeout( function () {
-		var uptime=spawn('uptime', null);
-		uptime.stdout.setEncoding('utf8');
-		uptime.stdout.on('data', function(data) {
-			//console.log('getting :'+data);
-			load_obj=parse_uptime(data);
-			if(load_obj) {
-				var key=load_obj.key, load=load_obj.d, str_load=JSON.stringify(load);
-				store.rpush('sysloads', str_load, function(e, r) {
-					pub.publish('sysloads', str_load);
-				});
-				// only store LIMIT number of entries, set in config.js
-				store.ltrim('sysloads', 0-LIMIT, -1, function(e, r) {
-					//
-				});
-			}
+		var uptime_arr=os.loadavg();
+		var loads=[], ts=(new Date()).getTime();;
+		for(var i=0, l=uptime_arr.length;i<l;i++) {
+			loads.push( [ts, Math.round(uptime_arr[i]*100)/100] );	
+		}
+		var str_loads=JSON.stringify(loads);
+		store.rpush('sysloads', str_loads, function(e, r) {
+			pub.publish('sysloads', str_loads);
+		});
+		// only store LIMIT number of entries, set in config.js
+		store.ltrim('sysloads', 0-LIMIT, -1, function(e, r) {
+			return;
 		});
 		schedule();
 	}, interval*1000);
