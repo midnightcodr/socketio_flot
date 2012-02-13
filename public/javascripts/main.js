@@ -54,9 +54,9 @@ function re_flot() {
 
 $(function() {
 	$('#update_int').slider( {
-		min:1,
+		min:5,
 		max:30,
-		step:1,
+		step:5,
 		value:interval,
 		slide: function(event, ui) {
 			$('#update_int_lbl').text(ui.value);
