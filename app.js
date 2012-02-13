@@ -45,11 +45,12 @@ var io=require('socket.io').listen(app);
 app.listen(3000);
 var limit=config.limit
 	, LIMIT=config.LIMIT
+	, zone_delta=config.zone_delta*3600*1000
 	, interval=config.interval;
 (function schedule() {
 	setTimeout( function () {
 		var uptime_arr=os.loadavg();
-		var loads=[], ts=(new Date()).getTime();;
+		var loads=[], ts=(new Date()).getTime()+zone_delta;
 		for(var i=0, l=uptime_arr.length;i<l;i++) {
 			loads.push( [ts, Math.round(uptime_arr[i]*100)/100] );	
 		}
