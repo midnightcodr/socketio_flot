@@ -93,7 +93,7 @@ io.sockets.on('connection', function(socket) {
 		});
 	});
 
-	store.lrange('sysloads', 0-limit, limit, function(e, data) {
+	store.lrange('sysloads', 0-limit, -1, function(e, data) {
 		// get data from redis
 		var d1=[], d5=[], d15=[];;
 		for(i=0, l=data.length; i<l; i++) {
