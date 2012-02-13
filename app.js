@@ -1,9 +1,9 @@
-
 /**
  * Module dependencies.
  */
 
 var express = require('express')
+  , os = require('os')
   , routes = require('./routes')
   , config = require('./config')
 
@@ -39,39 +39,24 @@ app.get('/flot', routes.flot);
 
 var io=require('socket.io').listen(app);
 app.listen(3000);
-var spawn=require('child_process').spawn, limit=config.limit, interval=config.interval, load=[], all_d={d1:[], d5:[], d15:[]}; // use all_d to hold config.limit number of data sets for initial connections
-function parse_uptime(data) {
-	// input example: 9:49  up 21 mins, 3 users, load averages: 0.12 0.26 0.23
-	var m=/.*load averages: (.*) (.*) (.*)/.exec(data);
-	if(m) {
-		var f=[], ts=(new Date()).getTime();
-		for(var i=1,l=m.length;i<l;i++) {
-			f.push( [ts, parseFloat(m[i])] );
-		}
-		return f;
-	} else {
-		return null;
-	}
-}
+var limit=config.limit, interval=config.interval, all_d={d1:[], d5:[], d15:[]}; // use all_d to hold config.limit number of data sets for initial connections
 (function schedule() {
 	setTimeout( function () {
-		var uptime=spawn('uptime', null);
-		uptime.stdout.setEncoding('utf8');
-		uptime.stdout.on('data', function(data) {
-			//console.log('getting :'+data);
-			load=parse_uptime(data);
-			if(load) {
-				all_d.d1.push(load[0]);
-				all_d.d5.push(load[1]);
-				all_d.d15.push(load[2]);
-				if(all_d.d1.length>limit) {
-					all_d.d1.slice(1);
-					all_d.d5.slice(1);
-					all_d.d15.slice(1);
-				}
-				io.sockets.emit('newdata', load);
-			}
-		});
+		var uptime_arr=os.loadavg();
+		var loads=[], ts=(new Date()).getTime();;
+		for(var i=0, l=uptime_arr.length;i<l;i++) {
+			loads.push( [ts, Math.round(uptime_arr[i]*100)/100] );  
+		}
+
+		all_d.d1.push(loads[0]);
+		all_d.d5.push(loads[1]);
+		all_d.d15.push(loads[2]);
+		if(all_d.d1.length>limit) {
+			all_d.d1.slice(1);
+			all_d.d5.slice(1);
+			all_d.d15.slice(1);
+		}
+		io.sockets.emit('newdata', loads);
 		schedule();
 	}, interval*1000);
 })();
