@@ -33,9 +33,9 @@ socket.on('setint', function(v) {
 function re_flot() {
 	// slice arrays if len>limit
 	if(d1.length>limit) {
-		d1=d1.slice(1);
-		d5=d5.slice(1);
-		d15=d15.slice(1);
+		d1=d1.slice(0-limit);
+		d5=d5.slice(0-limit);
+		d15=d15.slice(0-limit);
 	}
 	var d=[
 		{ data: d1, label:'last 1 min load'},
