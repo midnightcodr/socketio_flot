@@ -45,16 +45,16 @@ var io=require('socket.io').listen(app);
 app.listen(3000);
 var limit=config.limit
 	, LIMIT=config.LIMIT
-	, zone_delta=config.zone_delta*3600*1000
 	, interval=config.interval;
 (function schedule() {
 	setTimeout( function () {
 		var uptime_arr=os.loadavg();
-		var loads=[], ts=(new Date()).getTime()+zone_delta;
+		var ts=(new Date()).getTime();
 		for(var i=0, l=uptime_arr.length;i<l;i++) {
-			loads.push( [ts, Math.round(uptime_arr[i]*100)/100] );	
+			uptime_arr[i]=Math.round(uptime_arr[i]*100)/100;
 		}
-		var str_loads=JSON.stringify(loads);
+		uptime_arr.unshift(ts);
+		var str_loads=JSON.stringify(uptime_arr);
 		store.rpush('sysloads', str_loads, function(e, r) {
 			pub.publish('sysloads', str_loads);
 		});
@@ -76,15 +76,13 @@ io.sockets.on('connection', function(socket) {
 
 	store.lrange('sysloads', 0-limit, -1, function(e, data) {
 		// get data from redis
-		var d1=[], d5=[], d15=[];;
+		var all_d=[];
 		for(i=0, l=data.length; i<l; i++) {
-			d1.push( JSON.parse(data[i])[0] );
-			d5.push( JSON.parse(data[i])[1] );
-			d15.push( JSON.parse(data[i])[2] );
+			all_d.push(JSON.parse(data[i]));
 		}
-		if(d1.length>0) {
+		if(all_d.length>0) {
 			console.log('sending history data');
-			socket.emit('history', {d1:d1, d5:d5, d15:d15});
+			socket.emit('history', all_d);
 		}
 	});
 	socket.on( 'reqint', function(d) {
