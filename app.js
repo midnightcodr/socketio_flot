@@ -39,30 +39,28 @@ app.get('/flot', routes.flot);
 
 var io=require('socket.io').listen(app);
 app.listen(3000);
-var limit=config.limit, interval=config.interval, zone_delta=config.zone_delta*3600*1000, all_d={d1:[], d5:[], d15:[]}; // use all_d to hold config.limit number of data sets for initial connections
+var limit=config.limit, interval=config.interval, all_d=[]; // use all_d to hold config.limit number of data sets for initial connections
 (function schedule() {
 	setTimeout( function () {
 		var uptime_arr=os.loadavg();
-		var loads=[], ts=(new Date()).getTime()+zone_delta;
+		var ts=(new Date()).getTime();
 		for(var i=0, l=uptime_arr.length;i<l;i++) {
-			loads.push( [ts, Math.round(uptime_arr[i]*100)/100] );  
+			uptime_arr[i]=Math.round(uptime_arr[i]*100)/100;
 		}
+		uptime_arr.unshift(ts);
 
-		all_d.d1.push(loads[0]);
-		all_d.d5.push(loads[1]);
-		all_d.d15.push(loads[2]);
-		if(all_d.d1.length>limit) {
-			all_d.d1.slice(0-limit);
-			all_d.d5.slice(0-limit);
-			all_d.d15.slice(0-limit);
+		all_d.push(uptime_arr)
+
+		if(all_d.length>limit) {
+			all_d.slice(0-limit);
 		}
-		io.sockets.emit('newdata', loads);
+		io.sockets.emit('newdata', uptime_arr);
 		schedule();
 	}, interval*1000);
 })();
 io.sockets.on('connection', function(socket) {
 	socket.emit('init', {interval:interval, limit:limit});
-	if(all_d.d1.length>0) {
+	if(all_d.length>0) {
 		socket.emit('history', all_d);
 	}
 	socket.on( 'reqint', function(d) {
