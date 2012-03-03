@@ -12,9 +12,8 @@ socket.on('newdata', function(v) {
 	});
 });
 socket.on('history', function(a) {
-	for(var i, l=v.length;i<l;i++) {
-		var ts=v[0]-zone_delta;
-		var v=a[i];
+	for(var i=0, l=a.length;i<l;i++) {
+		var v=a[i],  ts=v[0]-zone_delta;
 		d1.push([ts, v[1]]);	
 		d5.push([ts, v[2]]);	
 		d15.push([ts, v[3]]);	
