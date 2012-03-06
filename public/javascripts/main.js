@@ -35,12 +35,16 @@ socket.on('setint', function(v) {
 });	
 
 function re_flot() {
+	var d1_len=d1.length;
+	if(d1_len<1) { return; }
 	// slice arrays if len>limit
-	if(d1.length>limit) {
+	if(d1_len>limit) {
 		d1=d1.slice(0-limit);
 		d5=d5.slice(0-limit);
 		d15=d15.slice(0-limit);
 	}
+	d1_len=d1.length;
+	var tick_int=Math.round((d1[d1_len-1][0]-d1[0][0])/5000);
 	var d=[
 		{ data: d1, label:'last 1 min load'},
 		{ data: d5, label:'last 5 min load'},
@@ -50,7 +54,7 @@ function re_flot() {
 		$('#testflot'), 
 		d,
 		{
-			xaxis:{mode:'time', timeFormat:'%h:%M:%S'},
+			xaxis:{mode:'time', timeFormat:'%h:%M:%S', tickSize:[tick_int, "second"]},
 			legend: { container: $('#legend') }
 		}
 	);
