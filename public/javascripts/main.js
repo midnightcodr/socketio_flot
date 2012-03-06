@@ -44,9 +44,7 @@ function re_flot() {
 		d15=d15.slice(0-limit);
 	}
 	d1_len=d1.length;
-console.log(d1);
 	var tick_int=Math.round((d1[d1_len-1][0]-d1[0][0])/5000);
-console.log(tick_int);
 	var d=[
 		{ data: d1, label:'last 1 min load'},
 		{ data: d5, label:'last 5 min load'},
