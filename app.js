@@ -39,15 +39,16 @@ app.get('/flot', routes.flot);
 
 var io=require('socket.io').listen(app);
 app.listen(3000);
-var limit=config.limit, interval=config.interval, all_d=[];
-
+var limit=config.limit, interval=config.interval, all_d=[]; // use all_d to hold config.limit number of data sets for initial connections
 (function schedule() {
 	setTimeout( function () {
-		var uptime_arr=os.loadavg(), ts=new Date().getTime();
+		var uptime_arr=os.loadavg();
+		var ts=(new Date()).getTime();
 		for(var i=0, l=uptime_arr.length;i<l;i++) {
-			uptime_arr[i]=Math.round(uptime_arr[i]*100)/100;  
+			uptime_arr[i]=Math.round(uptime_arr[i]*100)/100;
 		}
 		uptime_arr.unshift(ts);
+		all_d.push(uptime_arr)
 		if(all_d.length>limit) {
 			all_d=all_d.slice(0-limit);
 		}

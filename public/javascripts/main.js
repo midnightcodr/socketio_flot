@@ -1,10 +1,10 @@
-var socket=io.connect(), d1=[], d5=[], d15=[], zone_delta=(new Date()).getTimezoneOffset()*60000;      // time diff in ms;
-var interval,limit=1440; // show 2 hours data (7200/5)
+var socket=io.connect(), d1=[], d5=[], d15=[], zone_delta=(new Date()).getTimezoneOffset()*60000;	// time diff in ms
+var interval,limit=1440; // show 2 hours data (7200/5) at interval=5sec
 socket.on('newdata', function(v) {
 	var ts=v[0]-zone_delta;
-	d1.push([ts, v[1]]);
-	d5.push([ts, v[2]]);
-	d15.push([ts, v[3]]);
+	d1.push([ts, v[1]]);	
+	d5.push([ts, v[2]]);	
+	d15.push([ts, v[3]]);	
 	re_flot();	
 	var i=1;
 	$('#legend').find('tr').each(function() {
@@ -13,10 +13,10 @@ socket.on('newdata', function(v) {
 });
 socket.on('history', function(a) {
 	for(var i=0, l=a.length;i<l;i++) {
-		var v=a[i], ts=v[0]-zone_delta;
-		d1.push([ts, v[1]]);    
-		d5.push([ts, v[2]]);    
-		d15.push([ts, v[3]]);    
+		var v=a[i],  ts=v[0]-zone_delta;
+		d1.push([ts, v[1]]);	
+		d5.push([ts, v[2]]);	
+		d15.push([ts, v[3]]);	
 	}
 	re_flot();
 });
