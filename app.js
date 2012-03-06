@@ -12,9 +12,6 @@ var express = require('express')
   , config = require('./config')
 
 var app = module.exports = express.createServer();
-function gt() {
-	return (new Date()).getTime()-18000000;
-}
 
 // Configuration
 

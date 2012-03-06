@@ -14,4 +14,6 @@ http://dl.dropbox.com/u/16020214/socketio_flot_in_action.mov
 
 ## tested with node.js v0.6.7, v0.6.10
 
-
+## Note on redis_db branch
+	If you've tested the previous version(s), Please delete the old sysloads key from redis-server
+	before running the new version as the data structure has changed.
